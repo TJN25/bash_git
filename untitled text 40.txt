@@ -1,0 +1,90 @@
+progressiveMauve  --output=all.xmfa --output-guide-tree=all.tree --backbone-output=all.backbone  ~/phd/RNASeq/genera/Escherichia/GCA_000017745.1.data/GCA_000017745.1.fna ~/phd/RNASeq/genera/Enterobacter/GCA_001874505.1.data/GCA_001874505.1.fna ~/phd/RNASeq/genera/Klebsiella/GCA_000220485.1.data/GCA_000220485.1.fna ~/phd/RNASeq/genera/Salmonella/GCA_002504125.1.data/GCA_002504125.1.fna ~/phd/RNASeq/genera/Serratia/GCA_000438825.1.data/GCA_000438825.1.fna ~/phd/RNASeq/genera/Shigella/GCA_000007405.1.data/GCA_000007405.1.fna 
+
+
+
+
+                       "shigella.fitch",
+                       "escherichia.fitch",
+                       "serratia.fitch",
+                       "klebsiella",
+                       "enterobacter",
+                       "salmonella.fitch",
+                       "escherichia.shigella.fitch",
+                       "enterobacter.klebsiella.fitch",
+                       "escherichia.shigella.salmonella.fitch",
+                       "escherichia.shigella.salmonella.enterobacter.klebsiella.fitch", 
+"escherichia.shigella.salmonella.enterobacter.klebsiella.serratia.fitch"
+
+
+
+compare_ncRNA.R -r GCA_000017745.1-GCA_000017765.1_merged.gff -g GCA_000017745.1-GCA_000017985.1_merged.gff -x esch_1-2 -y esch_1-3  -o esch_1-2-3
+
+
+compare_ncRNA.R -r ~/phd/RNASeq/genera/Escherichia/GCA_002843685.1.data/GCA_002843685.1_new_calls.txt -g ~/phd/RNASeq/genera/Escherichia/GCA_001559675.1.data/GCA_001559675.1_new_calls.txt -a ~/phd/RNASeq/alignments/all_alignments/escherichia.backbone -x GCA_002843685.1 -y GCA_001559675.1 -s 5 -t 6 -o esch_5-6 -i
+
+compare_ncRNA.R -r ~/phd/RNASeq/genera/Escherichia/GCA_002843685.1.data/GCA_002843685.1_new_calls.txt -g ~/phd/RNASeq/genera/Escherichia/GCA_900186905.1.data/GCA_900186905.1_new_calls.txt -a ~/phd/RNASeq/alignments/all_alignments/escherichia.backbone -x GCA_002843685.1 -y GCA_900186905.1 -s 5 -t 4 -o esch_5-4 -i
+
+compare_ncRNA.R -r ~/phd/RNASeq/genera/Escherichia/GCA_002843685.1.data/GCA_002843685.1_new_calls.txt -g ~/phd/RNASeq/genera/Escherichia/GCA_000017985.1.data/GCA_000017985.1_new_calls.txt -a ~/phd/RNASeq/alignments/all_alignments/escherichia.backbone -x GCA_002843685.1 -y GCA_000017985.1 -s 5 -t 3 -o esch_5-3 -i
+
+
+compare_ncRNA.R -r ~/phd/RNASeq/genera/Escherichia/GCA_000017745.1.data/GCA_000017745.1_new_calls.txt -g ~/phd/RNASeq/genera/Escherichia/GCA_000017765.1.data/GCA_000017765.1_new_calls.txt -a ~/phd/RNASeq/alignments/all_alignments/escherichia.backbone -x GCA_000017745.1 -y GCA_000017765.1 -s 1 -t 2 -o esch_1-2 -i
+
+
+compare_ncRNA.R -r esch_5-6_merged.gff -g esch_5-4_merged.gff  -x esch_5-6 -y esch_5-4  -o esch_5-6-4
+compare_ncRNA.R -r esch_5-6-4_merged.gff -g esch_5-3_merged.gff  -x esch_5-6-4 -y esch_5-3  -o esch_5-6-4-3
+
+compare_ncRNA.R -r esch_1-2_merged.gff -g esch_5-6-4-3_merged.gff -a ~/phd/RNASeq/alignments/all_alignments/escherichia.backbone  -x esch_1-2 -y esch_5-6-4-3 -s 1 -t 5  -o escherichia_new
+
+
+
+escherichia-shigella-salmonella-enterobacter-klebsiella
+GCA_000017745.1_shifted_random_944-GCA_000017765.1_0-GCA_002843685.1_0-GCA_001559675.1_shifted_random_290-GCA_900186905.1_0-GCA_000017985.1_0-GCA_001559675.1_0-GCA_000017985.1_shifted_random_160-GCA_002843685.1_shifted_random_165-GCA_002843685.1_shifted_random_166-GCA_001559675.1_shifted_random_307-GCA_000007405.1_0-GCA_000283715.1_shifted_random_122-GCA_000497505.1_0-GCA_000007405.1_shifted_random_227-GCA_000283715.1_0-GCA_000007405.1_shifted_random_228-GCA_000283715.1_shifted_random_123-GCA_000283715.1_shifted_random_124-GCA_000283715.1_shifted_random_125-GCA_002504125.1_0-GCA_900184385.1_0-GCA_000006945.2_shifted_random_1501-GCA_000210855.2_0-GCA_002813995.1_0-GCA_000006945.2_0-GCA_000210855.2_shifted_random_116-GCA_000006945.2_shifted_random_1491-GCA_000006945.2_shifted_random_1492-GCA_000006945.2_shifted_random_1493-GCA_000006945.2_shifted_random_1494-GCA_000006945.2_shifted_random_1495-GCA_000006945.2_shifted_random_1490-GCA_000006945.2_shifted_random_1487-GCA_000006945.2_shifted_random_1488-GCA_000006945.2_shifted_random_1489-GCA_000006945.2_shifted_random_1484-GCA_000006945.2_shifted_random_1485-GCA_000006945.2_shifted_random_1486-GCA_900184385.1_shifted_random_163-GCA_000006945.2_shifted_random_1481-GCA_000006945.2_shifted_random_1482-GCA_000006945.2_shifted_random_1483-GCA_001874505.1_0-GCA_002303275.1_0-GCA_000220485.1_0-GCA_002072655.1_0-GCA_002848605.1_0
+
+GCA_000015425.1_shifted_random_173-GCA_900088705.1_0-GCA_000015425.1_0-GCA_000046845.1_shifted_random_76-GCA_000046845.1_0-GCA_000006765.1_0-GCA_900243355.1_0-GCA_002208745.1_0-GCA_000281215.1_0-GCA_000007565.2_0-GCA_000006765.1_shifted_random_274-GCA_001648195.1_0
+acinetobacter-pseudomonas
+
+
+GCA_000017745.1_shifted_random_1590-GCA_000017765.1_0-GCA_000017745.1_0-GCA_000017765.1_shifted_random_572-GCA_002843685.1_0-GCA_001559675.1_0-GCA_900186905.1_shifted_random_295-GCA_000017985.1_0-GCA_000007405.1_0-GCA_000283715.1_0-GCA_000497505.1_0-GCA_900186905.1_0-GCA_000007405.1_shifted_random_455-GCA_000007405.1_shifted_random_456-GCA_000017745.1_shifted_random_1591-GCA_900186905.1_shifted_random_296-GCA_002504125.1_0-GCA_900184385.1_0-GCA_000006945.2_shifted_random_3136-GCA_000210855.2_0-GCA_002813995.1_0-GCA_000006945.2_0-GCA_002813995.1_shifted_random_327-GCA_000006945.2_shifted_random_3137-GCA_000006945.2_shifted_random_3138-GCA_000210855.2_shifted_random_270-GCA_002813995.1_shifted_random_328-GCA_900184385.1_shifted_random_264-GCA_001874505.1_0-GCA_002303275.1_0-GCA_000220485.1_0-GCA_002072655.1_0-GCA_002848605.1_0-GCA_000210855.2_shifted_random_292-GCA_000006945.2_shifted_random_3179-GCA_000006945.2_shifted_random_3180-GCA_000220485.1_shifted_random_223-GCA_000220485.1_shifted_random_458-GCA_002848605.1_shifted_random_72-GCA_000220485.1_shifted_random_527-GCA_000747565.1_shifted_random_470-GCA_000438825.1_0-GCA_002220715.1_0-GCA_000747565.1_shifted_random_471-GCA_000747565.1_0-GCA_000438825.1_shifted_random_239-GCA_001042875.1_0-GCA_002850215.1_0-GCA_002355295.1_0-GCA_002850215.1_shifted_random_327-GCA_002850215.1_shifted_random_328-GCA_001042875.1_402-GCA_001042875.1_403-GCA_000015425.1_0-GCA_900088705.1_0-GCA_000046845.1_0-GCA_000006765.1_0-GCA_900243355.1_0-GCA_002208745.1_0-GCA_000281215.1_0-GCA_000007565.2_0-GCA_001648195.1_0-GCA_002849875.1_0-GCA_000310085.1_0-GCA_001886455.1_0-GCA_000213655.1_0
+
+while read p; do echo $p; esearch -db protein -query $p | efetch -format docsum | xtract -pattern DocumentSummary -element AccessionVersion >> genome_accessions; sleep 0.34 ; done < arCOG_gi_list
+while read p; do echo $p; sleep 0.34 ; done < arCOG_gi_list
+
+
+import Bio
+from Bio import SeqIO
+import pandas as pd
+
+arCOGCSV = open("ar14.arCOG.csv", 'r')
+
+arCOGs = {}
+proteins = {}
+arCOGCSV.seek(0)
+for line in arCOGCSV:
+	names = line.split(",")
+	protein = names[0]
+	#print(names)
+	try:
+		arCOG = names[6]
+		print(arCOG)
+	except IndexError:
+		#print(names)
+		pass
+	if arCOG in arCOGs:
+		arCOGs[arCOG] = arCOGs[arCOG] + "," + protein
+	else:
+		arCOGs.update({arCOG : protein})
+	proteins.update({protein : arCOG})
+
+
+hmmsearch --tblout arCOG_arVOG.tab --cpu 4 --noali ~/complete_packages/predvirushost/arVOG.hmm ~/DB/ar14.fa
+
+
+
+
+Aeropyrum coil-shaped virus
+Aeropyrum pernix bacilliform virus 1
+Natrinema virus SNJ1
+Pyrococcus abyssi virus 1
+Sulfolobus ellipsoid virus 1
+Sulfolobus polyhedral virus 1
+Thermoproteus tenax virus 1
