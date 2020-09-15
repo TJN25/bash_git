@@ -41,28 +41,32 @@ fi
 
 
 mkdir -p "$FOLDER/alifold/post_script"
-mkdir -p "$FOLDER/rscape_out"
-mkdir -p "$FOLDER/RNAAlifold"
+
 
 
 let "fileNum = 0"
 for file in alignments/*.stk
 
+
 do
 
 outname=`basename $file`
-
-#echo "${FOLDER}alifold/$outname.alifold"
-
 if [ -f "$FOLDER/alifold/$outname.alifold" ]; then
+	#echo "$FOLDER/alifold/$file.alifold"
 	echo "Already exists: $file"
 	continue
+else
+	echo "Checking size: $file"
 fi
 
 
+lines=`wc -l < $file`
+if (( $lines < 1));then
+continue
+fi
 
 
-echo "Running on: $file"
+nseqs=`grep "#=" $file | cut -d ' ' -f2 | sort | uniq | wc -l`
 
 
 start=`grep "GCA" $file | head -n 1 | cut -d " " -f2 | cut -d "/" -f2 | cut -d "-" -f1`
@@ -94,30 +98,50 @@ if (( $length < 0 )); then
 fi
 
 if (( $length < 500 )); then
-# esl-reformat  clustal $file  | RNAalifold --aln-stk=${file} >> ./RNAalifold/$outname.rnaalifold
-# cat alirna.ps > ./alifold/post_script/$outname.ps      
-time esl-reformat  clustal $file  | alifoldz.pl > ./alifold/$outname.alifold         
+
+ID=`grep "NC_" $file | head -n 1 | cut -d " " -f2`
+
+if [[ $ID == "" ]]; then
+	ID=`grep "NZ_" $file | head -n 1 | cut -d " " -f2`
+fi
+
+if [[ $ID == "" ]]; then
+	ID=`grep GCA_" $file | head -n 1 | cut -d " " -f2`
+fi
+
+if [[ $ID == "" ]]; then
+	head $file
 else
+alignmentLength=`grep $ID $file | grep -v "#" | tr -s ' ' | cut -d ' ' -f2 | wc -c`
+
+diffLength=`expr $alignmentLength - $length`
+
+if (( $diffLength > $length ));then
+echo "Alignment is poor: $file"
+continue
+fi
+fi
+
+
+
+
+echo "Running alifoldz.pl on $file (length: $length, nseqs: $nseqs)"
+
+time esl-reformat  clustal $file  | alifoldz.pl > ./alifold/$outname.alifold         
+ 
+
+else
+
 	echo "Skipping: $file"
+
+
 fi
 
 done
 
-# let "fileNum = 0"
-# for file in alignments_G*;
-# do
-# 
-# 
-# if [ -f "../rscape_out/${file}_1.R2R.sto" ]; then
-# echo "Already exists: $file"
-# continue
-# else
-# 
-# echo "Running R-scape on: $file"
-# 	
-# fi
-# 
-# R-scape --r2rall --outdir ../rscape_out/ $file
-# 
-# done
+
+
+
+
+
 

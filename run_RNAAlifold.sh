@@ -41,7 +41,6 @@ fi
 
 
 mkdir -p "$FOLDER/alifold/post_script"
-mkdir -p "$FOLDER/rscape_out"
 mkdir -p "$FOLDER/RNAAlifold"
 
 
@@ -49,12 +48,15 @@ let "fileNum = 0"
 for file in alignments/*.stk
 
 do
+lines=`wc -l < $file`
+if (( $lines < 1));then
+continue
+fi
 
 outname=`basename $file`
 
-#echo "${FOLDER}alifold/$outname.alifold"
 
-if [ -f "$FOLDER/alifold/$outname.alifold" ]; then
+if [ -f "$FOLDER/RNAAlifold/$outname.rnaalifold" ]; then
 	echo "Already exists: $file"
 	continue
 fi
@@ -94,30 +96,13 @@ if (( $length < 0 )); then
 fi
 
 if (( $length < 500 )); then
-# esl-reformat  clustal $file  | RNAalifold --aln-stk=${file} >> ./RNAalifold/$outname.rnaalifold
-# cat alirna.ps > ./alifold/post_script/$outname.ps      
-time esl-reformat  clustal $file  | alifoldz.pl > ./alifold/$outname.alifold         
+esl-reformat  clustal $file  | RNAalifold --aln-stk=${file} >> ./RNAAlifold/$outname.rnaalifold
+cat alirna.ps > ./alifold/post_script/$outname.ps      
 else
 	echo "Skipping: $file"
 fi
 
 done
 
-# let "fileNum = 0"
-# for file in alignments_G*;
-# do
-# 
-# 
-# if [ -f "../rscape_out/${file}_1.R2R.sto" ]; then
-# echo "Already exists: $file"
-# continue
-# else
-# 
-# echo "Running R-scape on: $file"
-# 	
-# fi
-# 
-# R-scape --r2rall --outdir ../rscape_out/ $file
-# 
-# done
+
 

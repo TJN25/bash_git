@@ -42,60 +42,148 @@ case $arg in
     esac
 done
 
+COUNTER=0
+mkdir -p "rmfam_cmscan"
+mkdir -p "rmfam_gff_files"
+mkdir -p "rmfam_tblout"
+
 
 let "fileNum = 0"
+if [[ $extension == "fna" ]]; then
+
+	for file in *.$extension
+	do
+		if [ -f "rmfam_tblout/$file.out.tblout" ]; then
+			echo "Already exists: $file"
+ 			continue
+		fi
+		length=`grep -v ">" $file | wc -c`
+		if (( $length < 500 )); then
+			echo "Running rmfam_scan on $file (length: $length)"
+			time rmfam_scan.pl -g -f ~/phd/RNASeq/RMfam/scripts/RMfam.cm $file -o $file.out 
+			mv *.tblout rmfam_tblout
+			mv *.cmscan rmfam_cmscan
+			mv *.gff rmfam_gff_files
+		else
+			echo "Skipping: $file"
+		fi
+	done
+else
+
 
 for file in *.$extension
 
 do
 
-if [[ $align == "T" ]]; then
 
-echo "Aligning"
-esl-reformat  clustal $file > $file.clustal
+if [ -f "rmfam_tblout/$file.out.tblout" ]; then
+	echo "Already exists: $file"
+ 	continue
+else
+echo "Checking size: $file"
+fi
 
-echo "Running rmfam_scan"
 
-rmfam_scan.pl -g -f ~/phd/RNASeq/RMfam/scripts/RMfam.cm $file.clustal -o $file.out
-#mv *.cmscan ${file}-aligned.cmscan
-#mv *.tblout ${file}-aligned.tblout
+lines=`wc -l < $file`
+if (( $lines < 1));then
+continue
+fi
 
+# COUNTER=$((COUNTER+1))
+# 
+# if (( $COUNTER > 100 )); then
+# echo "waiting"
+# COUNTER=1
+# time wait
+# 
+# 
+# 
+# fi
+
+
+# if [[ $align == "T" ]]; then
+
+# echo "Aligning $file"
+# esl-reformat  clustal $file > $file.clustal
+
+nseqs=`grep "#=" $file | cut -d ' ' -f2 | sort | uniq | wc -l`
+
+
+start=`grep "GCA" $file | head -n 1 | cut -d " " -f2 | cut -d "/" -f2 | cut -d "-" -f1`
+end=`grep "GCA" $file | head -n 1 | cut -d " " -f2 | cut -d "/" -f2 | cut -d "-" -f2`
+
+if [[ $start == "" ]]; then
+	start=`grep "NC_" $file | head -n 1 | cut -d " " -f2 | cut -d "/" -f2 | cut -d "-" -f1`
+	end=`grep "NC_" $file | head -n 1 | cut -d " " -f2 | cut -d "/" -f2 | cut -d "-" -f2`
+
+fi
+
+if [[ $start == "" ]]; then
+	start=`grep "NZ_" $file | head -n 1 | cut -d " " -f2 | cut -d "/" -f2 | cut -d "-" -f1`
+	end=`grep "NZ_" $file | head -n 1 | cut -d " " -f2 | cut -d "/" -f2 | cut -d "-" -f2`
+
+fi
+
+if [[ $start == "" ]]; then
+	head $file
+fi
+
+
+
+
+length=`expr $end - $start`
+
+if (( $length < 0 )); then
+	length=$(( -1 * $length ))
+fi
+
+if (( $length < 500 )); then
+
+ID=`grep "NC_" $file | head -n 1 | cut -d " " -f2`
+
+if [[ $ID == "" ]]; then
+	ID=`grep "NZ_" $file | head -n 1 | cut -d " " -f2`
+fi
+
+if [[ $ID == "" ]]; then
+	ID=`grep GCA_" $file | head -n 1 | cut -d " " -f2`
+fi
+
+if [[ $ID == "" ]]; then
+	head $file
+else
+alignmentLength=`grep $ID $file | grep -v "#" | tr -s ' ' | cut -d ' ' -f2 | wc -c`
+
+diffLength=`expr $alignmentLength - $length`
+
+if (( $diffLength > $length ));then
+echo "Alignment is poor: $file"
+continue
+fi
+fi
+
+
+
+
+echo "Running rmfam_scan on $file (length: $length, nseqs: $nseqs)"
+
+ time rmfam_scan.pl -g -f ~/phd/RNASeq/RMfam/scripts/RMfam.cm $file -o $file.out 
+ 
+ 
+ mv *.tblout rmfam_tblout
+mv *.cmscan rmfam_cmscan
+mv *.gff rmfam_gff_files
+ 
 else
 
-echo "Running rmfam_scan"
-
-rmfam_scan.pl -g -f ~/phd/RNASeq/RMfam/scripts/RMfam.cm $file -o $file
-
-#mv *.cmscan $file.cmscan
-#mv *.tblout $file.tblout
-
-fi 
-
-if [[ $keep == "T" ]]; then
-
-mkdir -p "rmfam_scan_tmp"
-mv *.mcl rmfam_scan_tmp
-mv *.clustal rmfam_scan_tmp
-
-
-else
-
-rm *.mcl
-rm *.clustal
+	echo "Skipping: $file"
 
 
 fi
 
-mkdir -p "rmfam_cmscan"
-mkdir -p "rmfam_gff_files"
-mkdir -p "rmfam_tblout"
-mv *.tblout rmfam_tblout
-mv *.cmscan rmfam_cmscan
-mv *.gff rmfam_gff_files
-
-#rmfam_scan.pl -f ~/phd/RNASeq/RMfam/scripts/RMfam.cm sra_enterics-serratia-1007_1.fasta -o sra_enterics-serratia-1007_1.tblout
-
 done
+
+fi
 
 cd rmfam_tblout
 

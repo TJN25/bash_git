@@ -51,13 +51,12 @@ for file in alignments/*.stk
 do
 
 outname=`basename $file`
+rscapename="alignments_${outname}.stk"
+
+
 
 #echo "${FOLDER}alifold/$outname.alifold"
 
-if [ -f "$FOLDER/alifold/$outname.alifold" ]; then
-	echo "Already exists: $file"
-	continue
-fi
 
 
 
@@ -93,31 +92,15 @@ if (( $length < 0 )); then
 	length=$(( -1 * $length ))
 fi
 
-if (( $length < 500 )); then
+if (( $length < 750 )); then
 # esl-reformat  clustal $file  | RNAalifold --aln-stk=${file} >> ./RNAalifold/$outname.rnaalifold
 # cat alirna.ps > ./alifold/post_script/$outname.ps      
-time esl-reformat  clustal $file  | alifoldz.pl > ./alifold/$outname.alifold         
+esl-reformat  clustal $file  | alifoldz.pl > ./alifold/$outname.alifold  &       
+# R-scape --r2rall --outdir ./rscape_out/ $rscapename
+
 else
 	echo "Skipping: $file"
 fi
 
 done
-
-# let "fileNum = 0"
-# for file in alignments_G*;
-# do
-# 
-# 
-# if [ -f "../rscape_out/${file}_1.R2R.sto" ]; then
-# echo "Already exists: $file"
-# continue
-# else
-# 
-# echo "Running R-scape on: $file"
-# 	
-# fi
-# 
-# R-scape --r2rall --outdir ../rscape_out/ $file
-# 
-# done
-
+wait

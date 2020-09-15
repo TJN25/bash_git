@@ -102,9 +102,6 @@ for file in $folder/*.$extension
 
 do
 
-
-
-
 echo $file
 outname=`basename $file`
 
