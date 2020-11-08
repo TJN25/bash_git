@@ -1,3 +1,4 @@
+
 #!/bin/bash
 
 ##Downloads the genome sequence (and gff file if the -g flag is used) when given a 

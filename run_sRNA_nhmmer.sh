@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Setup Variables #
+
 usage(){
     echo "run_sRNA_nhmmer.sh is a script for running nhmmer and sorting the results.  
 Usage:
@@ -20,16 +22,21 @@ check_seq_lengths=""
 database=""
 folder=""
 extension=""
-
+outfolder="."
 missing=""
 exitTrue="F"
 evalue="1e-5"
-while getopts "d:f:E:e:ch" arg; do
+
+# User Input Options #
+
+while getopts "d:o:f:E:e:ch" arg; do
 case $arg in
 	d) 
 	database=${OPTARG};;
 	f)
 	folder=${OPTARG};;
+	o)
+	outfolder=${OPTARG};;
 	E)
 	evalue=${OPTARG};;
 	e)
@@ -45,11 +52,12 @@ case $arg in
     esac
 done
 
+# Tests for inputs #
+
 if [[ $database == "" ]]; then
 	missing="$missing -d <database> "
 	exitTrue="T"
 fi
-
 
 if [[ $folder == "" ]]; then
 	missing="$missing -f <folder> "
@@ -65,7 +73,6 @@ if [[ $exitTrue == "T" ]];then
 	echo "$missing not found. Use -h for more help."
 	exit
 fi
-
 
 if [[ $extension == "stk" ]]; then
 	check_seq_lengths=""
@@ -91,10 +98,14 @@ if [[ $check_seq_lengths == "T" ]]; then
 
 fi
 
+# Set up folders/files #
+
 echo "making directories in `pwd`"
-mkdir -p alignments
-mkdir -p hmm
-mkdir -p output
+mkdir -p $outfolder/alignments
+mkdir -p $outfolder/hmm
+mkdir -p $outfolder/output
+
+# Run nhmmer #
 
 echo "running nhmmer"
 let "fileNum = 0"
@@ -106,7 +117,7 @@ echo $file
 outname=`basename $file`
 
 
-if [ -f "output/$outname.res" ]; then
+if [ -f "$outfolder/output/$outname.res" ]; then
 	echo "Already exists: $file"
 	continue
 fi
@@ -114,16 +125,20 @@ fi
 
 
 
-nhmmer -E $evalue --tblout output/$outname.tbl -A alignments/tmp.stk --tformat FASTA  $file $database > output/$outname.res
+nhmmer -E $evalue --tblout $outfolder/output/$outname.tbl -A $outfolder/alignments/tmp.stk --tformat FASTA  $file $database > $outfolder/output/$outname.res
 
-lines=`wc -l < alignments/tmp.stk`
+lines=`wc -l < $outfolder/alignments/tmp.stk`
 
 
 if (( $lines > 0 )); then
 
-esl-alimanip   --detrunc  60  alignments/tmp.stk > alignments/$outname.stk
 
-hmmbuild hmm/$outname.hmm alignments/$outname.stk
+##esl-weight!!!
+esl-alimanip   --lnfract 0.8 --lxfract 1.2 --lmin 50 --lmax 500 --detrunc 30  $outfolder/alignments/tmp.stk | esl-alimask -g --gapthresh 0.8 -p --pfract 0.5 --pthresh 0.5 --keepins - > $outfolder/alignments/$outname
+
+
+
+hmmbuild $outfolder/hmm/$outname.hmm $outfolder/alignments/$outname
 
 else
 
