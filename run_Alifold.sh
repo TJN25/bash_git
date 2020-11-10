@@ -61,7 +61,7 @@ fi
 
 
 lines=`wc -l < $file`
-if (( $lines < 1));then
+if (( $lines < 1 ));then
 continue
 fi
 
@@ -69,18 +69,18 @@ fi
 nseqs=`grep "#=" $file | cut -d ' ' -f2 | sort | uniq | wc -l`
 
 
-start=`grep "GCA" $file | head -n 1 | cut -d " " -f2 | cut -d "/" -f2 | cut -d "-" -f1`
-end=`grep "GCA" $file | head -n 1 | cut -d " " -f2 | cut -d "/" -f2 | cut -d "-" -f2`
+start=`grep "GCA" $file | head -n 1 | cut -d " " -f1 | cut -d "/" -f2 | cut -d "-" -f1`
+end=`grep "GCA" $file | head -n 1 | cut -d " " -f1 | cut -d "/" -f2 | cut -d "-" -f2`
 
 if [[ $start == "" ]]; then
-	start=`grep "NC_" $file | head -n 1 | cut -d " " -f2 | cut -d "/" -f2 | cut -d "-" -f1`
-	end=`grep "NC_" $file | head -n 1 | cut -d " " -f2 | cut -d "/" -f2 | cut -d "-" -f2`
+	start=`grep "NC_" $file | head -n 1 | cut -d " " -f1 | cut -d "/" -f2 | cut -d "-" -f1`
+	end=`grep "NC_" $file | head -n 1 | cut -d " " -f1 | cut -d "/" -f2 | cut -d "-" -f2`
 
 fi
 
 if [[ $start == "" ]]; then
-	start=`grep "NZ_" $file | head -n 1 | cut -d " " -f2 | cut -d "/" -f2 | cut -d "-" -f1`
-	end=`grep "NZ_" $file | head -n 1 | cut -d " " -f2 | cut -d "/" -f2 | cut -d "-" -f2`
+	start=`grep "NZ_" $file | head -n 1 | cut -d " " -f1 | cut -d "/" -f2 | cut -d "-" -f1`
+	end=`grep "NZ_" $file | head -n 1 | cut -d " " -f1 | cut -d "/" -f2 | cut -d "-" -f2`
 
 fi
 
