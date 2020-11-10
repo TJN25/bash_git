@@ -42,6 +42,7 @@ fi
 
 mkdir -p "$FOLDER/alifold/post_script"
 mkdir -p "$FOLDER/RNAAlifold"
+mkdir -p alignments_rnaalifold
 
 
 let "fileNum = 0"
@@ -105,4 +106,10 @@ fi
 done
 
 
+for file in alignments_G*;
+do
+outname=`basename $file .stk.stk`
 
+mv $file ./alignments_rnaalifold/$outname.stk
+
+done

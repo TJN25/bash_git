@@ -75,27 +75,27 @@ done
 
 for file in *.txt;
 do
-# max_num="0"
-outname=`basename $file _combine_list.txt`
+max_num="0"
+outname=`basename $file _combined_list.txt`
 echo $outname
-# > fasta/$outname.fa
-# while read line; 
-# do 
-# 
-# esl-reformat fasta ../alignments_filtered/$line >> fasta/$outname.fa
-# 
-# current_num=`esl-alistat ../alignments_filtered/$line | grep "Number of sequences" | cut -d ' ' -f 4`
-# 
-# if(( $current_num > $max_num ));
-# then
-# 
-# max_seq="$line"
-# max_num="$current_num"
-# fi
-# 
-# done < $file
-# 
-# hmmbuild hmm/$outname.hmm ../alignments_filtered/$max_seq
+> fasta/$outname.fa
+while read line; 
+do 
+
+esl-reformat fasta ../alignments_filtered/$line.stk >> fasta/$outname.fa
+
+current_num=`esl-alistat ../alignments_filtered/$line.stk | grep "Number of sequences" | cut -d ' ' -f 4`
+
+if(( $current_num > $max_num ));
+then
+
+max_seq="$line.stk"
+max_num="$current_num"
+fi
+
+done < $file
+
+hmmbuild hmm/$outname.hmm ../alignments_filtered/$max_seq
 
 hmmalign --informat fasta hmm/$outname.hmm fasta/$outname.fa | esl-alimask -g --gapthresh 0.8 -p --pfract 0.5 --pthresh 0.5 - | esl-alimanip   --lnfract 0.6 --lxfract 1.4 --lmin 50 --lmax 500 --detrunc 50 - > combined_alignments_2/$outname.stk
 
@@ -103,12 +103,12 @@ done
 
 
 
-> ../../original_stats_2.txt
-> ../../new_stats_2.txt
+> ../../original_stats_3.txt
+> ../../new_stats_3.txt
 for file in *;
 do 
 
-esl-alistat ../../alignments_filtered/$file | sed 's/%//g' | sed 's/Alignment /Alignment_/g' | sed 's/Average /Average_/g' | sed 's/Format: /Format:_/g' | sed 's/Number of sequences/Number_of_sequences/g' | sed -e "s/$/ $file/" >> ../../original_stats_2.txt
+esl-alistat ../../alignments_filtered/$file | sed 's/%//g' | sed 's/Alignment /Alignment_/g' | sed 's/Average /Average_/g' | sed 's/Format: /Format:_/g' | sed 's/Number of sequences/Number_of_sequences/g' | sed -e "s/$/ $file/" >> ../../original_stats_3.txt
 
 
 lines=`wc -l < $file`
@@ -117,7 +117,7 @@ if (( $lines < 1));then
 continue
 fi
 
-esl-alistat $file | sed 's/%//g' | sed 's/Alignment /Alignment_/g' | sed 's/Average /Average_/g' | sed 's/Format: /Format:_/g' | sed 's/Number of sequences/Number_of_sequences/g' | sed -e "s/$/ $file/" >> ../../new_stats_2.txt
+esl-alistat $file | sed 's/%//g' | sed 's/Alignment /Alignment_/g' | sed 's/Average /Average_/g' | sed 's/Format: /Format:_/g' | sed 's/Number of sequences/Number_of_sequences/g' | sed -e "s/$/ $file/" >> ../../new_stats_3.txt
 
 done
 
@@ -134,10 +134,40 @@ while read line;
 do 
 
 name=`basename $line .stk`
+echo $name 
 
 while read line_2;
 do
-cp ../alignments_filtered/${line_2} combined_alignments_2/
-done < ${name}_combine_list.txt
+
+echo $line_2
+
+cp ../alignments_filtered/${line_2}.stk combined_alignments_2/
+done < ${name}_combined_list.txt
 
 done < $file
+
+
+
+promptValue() {
+  read -p "$1"": " val
+   $val
+}
+
+
+
+for file in *;
+do 
+
+esl-alistat $file | sed 's/%//g' | sed 's/Alignment /Alignment_/g' | sed 's/Average /Average_/g' | sed 's/Format: /Format:_/g' | sed 's/Number of sequences/Number_of_sequences/g' | sed -e "s/$/ $file/" >> ../original_stats_all.txt
+
+done
+
+
+mkdir -p alignments_rnaalifold
+for file in alignments_G*;
+do
+outname=`basename $file .stk.stk`
+
+mv $file ./alignments_rnaalifold/$outname.stk
+
+done

@@ -45,7 +45,7 @@ mkdir -p "$FOLDER/alifold/post_script"
 
 
 let "fileNum = 0"
-for file in alignments/*.stk
+for file in alignments_rnaalifold/*.stk
 
 
 do
