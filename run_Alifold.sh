@@ -106,7 +106,7 @@ if [[ $ID == "" ]]; then
 fi
 
 if [[ $ID == "" ]]; then
-	ID=`grep GCA_" $file | head -n 1 | cut -d " " -f2`
+	ID=`grep "GCA_" $file | head -n 1 | cut -d " " -f2`
 fi
 
 if [[ $ID == "" ]]; then

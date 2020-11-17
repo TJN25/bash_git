@@ -171,3 +171,18 @@ outname=`basename $file .stk.stk`
 mv $file ./alignments_rnaalifold/$outname.stk
 
 done
+
+
+
+for file in *.stk;
+do 
+
+ID=`echo $file | cut -d '.' -f1,2 | cut -d "_" -f1,2`
+ID_2=`echo $file | cut -d '.' -f1,2 `
+
+grep ^"#=GS" $file | sort | uniq | cut -d "/" -f1 | cut -d ' ' -f2 | sed -e "s/$/   $ID   $ID_2/" >> ../query_target_pairs_2.txt
+
+done
+
+
+for file in *.rnaalifold;   do   if [ $file == *"\.stk\.rnaalifold" ]; then ID=`basename $file .stk.rnaalifold`; else ID=`basename $file .stk.rnaalifold`; fi; MFE=`grep "=" $file | rev | cut -d "(" -f1 | rev | cut -d "=" -f1`; echo "$ID $MFE" >> ../positive_control.rnaalifold; done
