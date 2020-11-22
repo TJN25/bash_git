@@ -1,7 +1,3 @@
-esl-alimanip --lnfract 0.8 --lxfract 1.2 --lmin 50 --lmax 500 --detrunc 30 GCA_000017745.1_101.stk.stk
-
-
-
 for file in *.stk
 do
 outname=`basename $file .stk`
@@ -9,6 +5,8 @@ outname=`basename $file .stk`
 esl-alimanip --lnfract 0.8 --lxfract 1.2 --lmin 50 --lmax 500 --detrunc 30 $file > ../alignments_filtered/$outname.stk
 
 done
+
+
 
 for file in *.stk
 
@@ -105,6 +103,7 @@ done
 
 > ../../original_stats_3.txt
 > ../../new_stats_3.txt
+
 for file in *;
 do 
 
@@ -120,6 +119,12 @@ fi
 esl-alistat $file | sed 's/%//g' | sed 's/Alignment /Alignment_/g' | sed 's/Average /Average_/g' | sed 's/Format: /Format:_/g' | sed 's/Number of sequences/Number_of_sequences/g' | sed -e "s/$/ $file/" >> ../../new_stats_3.txt
 
 done
+
+
+
+
+
+
 
 
 while read line; 
@@ -185,4 +190,107 @@ grep ^"#=GS" $file | sort | uniq | cut -d "/" -f1 | cut -d ' ' -f2 | sed -e "s/$
 done
 
 
-for file in *.rnaalifold;   do   if [ $file == *"\.stk\.rnaalifold" ]; then ID=`basename $file .stk.rnaalifold`; else ID=`basename $file .stk.rnaalifold`; fi; MFE=`grep "=" $file | rev | cut -d "(" -f1 | rev | cut -d "=" -f1`; echo "$ID $MFE" >> ../positive_control.rnaalifold; done
+for file in *.rnaalifold;   do   if [ $file == *"\.stk\.rnaalifold" ]; then ID=`basename $file .stk.rnaalifold`; else ID=`basename $file .stk.rnaalifold`; fi; MFE=`grep "=" $file | rev | cut -d "(" -f1 | rev | cut -d "=" -f1`; echo "$ID $MFE" >> ../predicted.rnaalifold; done
+
+
+
+
+while read line;
+do
+
+if [ -f "representative_genomes/$line.fna" ]; then
+	#echo "$FOLDER/alifold/$file.alifold"
+	echo "Already exists: $line"
+	continue
+else
+	echo $line
+
+fi
+
+fetch_genomes_from_GCA.sh -e fna -r $line -o representative_genomes/$line
+
+done < representative_genomes_list.txt
+
+
+
+for file in *.stk; do 
+echo $file;  
+outname=`basename $file .stk`; 
+outfolder="~/phd/RNASeq/srna_seqs/version_1/predicted/hmm"; 
+hmmbuild ../hmm/$outname.hmm $file; 
+done
+
+
+
+
+
+for file in *.hmm;
+do 
+outname=`basename $file .hmm`
+if [ -f "~/phd/RNASeq/srna_seqs/version_1/predicted/large_alignments/$outname.stk" ]; then
+echo "Already exists: $line"
+continue
+else
+echo "$file"
+
+fi
+
+hmmalign --informat fasta ~/phd/RNASeq/srna_seqs/version_1/predicted/hmm/$file ~/phd/RNASeq/representative_genomes/representative_genomes.fna | esl-alimask -g --gapthresh 0.8 -p --pfract 0.5 --pthresh 0.5 - | esl-alimanip   --lnfract 0.6 --lxfract 1.4 --lmin 50 --lmax 500 --detrunc 50 - > ~/phd/RNASeq/srna_seqs/version_1/predicted/large_alignments/$outname.stk;  
+
+done
+
+
+
+
+
+for file in GCA_*; 
+do  
+
+accession=`basename $file .fna`; 
+echo $accession; 
+
+fetch_genomes_from_GCA.sh -e fna -r $accession -o $accession -g
+
+
+done
+
+
+
+
+
+
+> ../../large_stats.txt
+for file in *;
+do 
+lines=`wc -l < $file`
+if (( $lines < 1));then
+echo "No data in $file"
+continue
+fi
+esl-alistat $file | sed 's/%//g' | sed 's/Alignment /Alignment_/g' | sed 's/Average /Average_/g' | sed 's/Format: /Format:_/g' | sed 's/Number of sequences/Number_of_sequences/g' | sed -e "s/$/ $file/" >> ../../large_stats.txt
+done
+
+
+
+
+
+
+nhmmer -E 1e-20 --tblout RF00177_rep.tbl -A RF00177_rep.stk --tformat FASTA  RF00177.stk representative_genome/representative_genomes.fna 
+
+
+nhmmer -E 1e-5 --tblout foobar.tbl -A foobar.stk --tformat FASTA  GCA_000006765.1_397.stk representative_genome/representative_genomes.fna 
+
+
+esl-alimanip   --lnfract 0.8 --lxfract 1.2 --lmin 50 --lmax 500 --detrunc 30  tmp.stk | esl-alimask -g --gapthresh 0.8 -p --pfract 0.5 --pthresh 0.5 --keepins - > RF00177_rep.stk
+
+
+
+
+
+take cmsearch res
+fetch sequence for the best scoring match for each genome
+cmalign (use the RF00177.cm i think)
+reformat to phylip (use a key for the contig and position names)
+dnadist to get the distance matrix
+reformat the dist matrix to be useable for plotting pairs of contigs
+
