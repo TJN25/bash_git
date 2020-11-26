@@ -68,8 +68,8 @@ fi
 echo "Running on: $file"
 
 
-start=`grep "GCA" $file | head -n 1 | cut -d " " -f2 | cut -d "/" -f2 | cut -d "-" -f1`
-end=`grep "GCA" $file | head -n 1 | cut -d " " -f2 | cut -d "/" -f2 | cut -d "-" -f2`
+start=`grep "GCA_" $file | head -n 1 | cut -d " " -f2 | cut -d "/" -f2 | cut -d "-" -f1`
+end=`grep "GCA_" $file | head -n 1 | cut -d " " -f2 | cut -d "/" -f2 | cut -d "-" -f2`
 
 if [[ $start == "" ]]; then
 	start=`grep "NC_" $file | head -n 1 | cut -d " " -f2 | cut -d "/" -f2 | cut -d "-" -f1`
@@ -100,13 +100,13 @@ if (( $length < 500 )); then
 esl-reformat  clustal $file  | RNAalifold --aln-stk=${file} >> ./RNAAlifold/$outname.rnaalifold
 cat alirna.ps > ./alifold/post_script/$outname.ps      
 else
-	echo "Skipping: $file"
+	echo "Skipping: $file. Length: $length"
 fi
 
 done
 
 
-for file in alignments_G*;
+for file in alignments_G*; #change to _R for positive control
 do
 outname=`basename $file .stk.stk`
 

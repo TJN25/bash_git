@@ -66,61 +66,23 @@ continue
 fi
 
 
-nseqs=`grep "#=" $file | cut -d ' ' -f2 | sort | uniq | wc -l`
-
-
-start=`grep "GCA" $file | head -n 1 | cut -d " " -f1 | cut -d "/" -f2 | cut -d "-" -f1`
-end=`grep "GCA" $file | head -n 1 | cut -d " " -f1 | cut -d "/" -f2 | cut -d "-" -f2`
-
-if [[ $start == "" ]]; then
-	start=`grep "NC_" $file | head -n 1 | cut -d " " -f1 | cut -d "/" -f2 | cut -d "-" -f1`
-	end=`grep "NC_" $file | head -n 1 | cut -d " " -f1 | cut -d "/" -f2 | cut -d "-" -f2`
-
-fi
-
-if [[ $start == "" ]]; then
-	start=`grep "NZ_" $file | head -n 1 | cut -d " " -f1 | cut -d "/" -f2 | cut -d "-" -f1`
-	end=`grep "NZ_" $file | head -n 1 | cut -d " " -f1 | cut -d "/" -f2 | cut -d "-" -f2`
-
-fi
-
-if [[ $start == "" ]]; then
-	head $file
-fi
+nseqs=`esl-alistat $file | grep "Number of sequences" | cut -d ":" -f2`
 
 
 
+length=`esl-alistat $file | grep "Alignment length:" | cut -d ":" -f2`
+largest_length=`esl-alistat $file | grep "Largest" | cut -d ":" -f2`
 
-length=`expr $end - $start`
-
-if (( $length < 0 )); then
-	length=$(( -1 * $length ))
-fi
 
 if (( $length < 500 )); then
 
-ID=`grep "NC_" $file | head -n 1 | cut -d " " -f2`
-
-if [[ $ID == "" ]]; then
-	ID=`grep "NZ_" $file | head -n 1 | cut -d " " -f2`
-fi
-
-if [[ $ID == "" ]]; then
-	ID=`grep "GCA_" $file | head -n 1 | cut -d " " -f2`
-fi
-
-if [[ $ID == "" ]]; then
-	head $file
-else
-alignmentLength=`grep $ID $file | grep -v "#" | tr -s ' ' | cut -d ' ' -f2 | wc -c`
-
-diffLength=`expr $alignmentLength - $length`
+diffLength=`expr $largest_length - $length`
 
 if (( $diffLength > $length ));then
 echo "Alignment is poor: $file"
 continue
 fi
-fi
+
 
 
 

@@ -45,11 +45,11 @@ mkdir -p "$FOLDER/rscape_out"
 
 
 let "fileNum = 0"
-for file in alignments_G*;
+for file in alignments_rnaalifold/alignments_R*; #change to _R for positive control
 do
 
 checkname=`basename $file .stk`
-if [ -f "../rscape_out/${checkname}_1.R2R.sto" ]; then
+if [ -f "./rscape_out/${checkname}_1.R2R.sto" ]; then
 echo "Already exists: $file"
 continue
 else
@@ -58,7 +58,7 @@ echo "Running R-scape on: $file"
 	
 fi
 
-time R-scape --r2rall --outdir ../rscape_out/ $file > rsacpe.out
+time R-scape --r2rall --outdir ./rscape_out/ $file > rsacpe.out
 
 done
 

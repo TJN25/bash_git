@@ -185,7 +185,7 @@ do
 ID=`echo $file | cut -d '.' -f1,2 | cut -d "_" -f1,2`
 ID_2=`echo $file | cut -d '.' -f1,2 `
 
-grep ^"#=GS" $file | sort | uniq | cut -d "/" -f1 | cut -d ' ' -f2 | sed -e "s/$/   $ID   $ID_2/" >> ../query_target_pairs_2.txt
+grep ^"#=GS" $file | sort | uniq | cut -d "/" -f1 | cut -d ' ' -f2 | cut -d '|' -f2 | sed -e "s/$/   $ID   $ID_2/" >> ../query_target_pairs_positive_control.txt
 
 done
 
@@ -287,10 +287,174 @@ esl-alimanip   --lnfract 0.8 --lxfract 1.2 --lmin 50 --lmax 500 --detrunc 30  tm
 
 
 
-take cmsearch res
-fetch sequence for the best scoring match for each genome
-cmalign (use the RF00177.cm i think)
-reformat to phylip (use a key for the contig and position names)
-dnadist to get the distance matrix
-reformat the dist matrix to be useable for plotting pairs of contigs
+# take cmsearch res
+# fetch sequence for the best scoring match for each genome
+# cmalign (use the RF00177.cm i think)
+# reformat to phylip (use a key for the contig and position names)
+# dnadist to get the distance matrix
+# reformat the dist matrix to be useable for plotting pairs of contigs
+
+# "target_name", "accession", "query_name", "accession", "mdl", "mdl_from", "mdl_to", "seq_from", "seq_to", "strand", "trunc", "pass", "gc", "bias", "score", "E-value", "inc", "description_of_target"
+
+
+
+
+
+> RF00177_rep_seqs.fna
+while read line;
+do
+
+contig=`echo $line | cut -d ' ' -f1`
+contig_start=`echo $line | cut -d ' ' -f2`
+contig_end=`echo $line | cut -d ' ' -f3`
+contig_strand=`echo $line | cut -d ' ' -f4`
+
+if [[ $contig_strand == "+" ]];then
+esl-sfetch -c ${contig_start}..${contig_end} representative_genomes/representative_genomes.fna $contig >> RF00177_rep_seqs.fna
+else
+esl-sfetch -r -c ${contig_start}..${contig_end} representative_genomes/representative_genomes.fna $contig >> RF00177_rep_seqs.fna
+
+fi
+
+
+done < RF00177_rep_locations.txt
+
+
+cat ~/bin/r_git/R/r_files/test.tree > tmp1.tree
+while read line;
+do
+
+find_val=`echo $line | cut -d ' ' -f 1 | cut -d '.' -f1`
+replace_val=`echo $line | cut -d ' ' -f 2`
+
+
+echo $find_val
+
+sed "s/$find_val/${find_val}._${replace_val}/g" tmp1.tree > tmp.tree
+
+
+cat tmp.tree > tmp1.tree
+
+done < contig_descriptions.txt
+
+
+
+
+for file in GCA_*.fna;
+do
+
+runname=`basename $file .fna`
+
+if [ -f "${runname}.tmp.out" ]; then
+echo "Already exists: $runname"
+continue
+else
+echo "$runname"
+
+fi
+
+
+rfamscan $runname
+
+> $runname.tmp.out
+
+done
+
+
+
+
+
+
+
+
+for file in *.stk; do  ID=`echo $file | cut -d '.' -f1,2 | cut -d "_" -f1,2`;  grep ^"#=GS" $file | sort | uniq | cut -d "/" -f1 | cut -d ' ' -f2 | sed -e "s/$/   $ID/" >> ../query_target_pairs.txt;  done
+
+
+
+
+
+
+for file in ~/phd/RNASeq/representative_genomes/*.tblout; 
+do 
+
+final_line=`tail -n 1 $file`; 
+# echo $final_line;
+if [[ $final_line == "# [ok]" ]]; then
+
+cp $file ~/phd/RNASeq/rfam_files/
+
+else
+
+echo "$file not finished"
+
+fi
+done
+ 
+ 
+ 
+cat RF00177.tbl | sed 's/  /\t/g' | tr -s '\t' | sed 's/\t /\t/g' | sed 's/ \t/\t/g' | sed 's/ /\t/3' | sed 's/ /\t/' | sed 's/ /\t/' | sed 's/ /_/g' | sed 's/_!/\t!/g' | tr -s '\t' | sed 's/Pseudomonas\t/Pseudomonas_/g' > RF00177.tab
+
+
+> ../genome_contig_pairs.txt
+for file in GCA_*.fna; 
+do  
+ID=`echo $file | cut -d '.' -f1,2 | cut -d "_" -f1,2`;  
+grep ^">" $file | cut -d ' ' -f1 | sort | uniq | sed 's/>//g' | sed -e "s/$/   $ID/" >> ../genome_contig_pairs.txt;  
+done
+
+
+
+
+for file in *_locations.txt;
+do
+outname=`basename $file _locations.txt`
+
+echo $outname
+
+> ${outname}_seqs.fna
+while read line;
+do
+
+contig=`echo $line | cut -d ' ' -f1`
+contig_start=`echo $line | cut -d ' ' -f2`
+contig_end=`echo $line | cut -d ' ' -f3`
+contig_strand=`echo $line | cut -d ' ' -f4`
+
+if [[ $contig_strand == "+" ]];then
+esl-sfetch -c ${contig_start}..${contig_end} ~/phd/RNASeq/representative_genomes/representative_genomes.fna $contig >> ${outname}_seqs.fna
+else
+esl-sfetch -r -c ${contig_start}..${contig_end} ~/phd/RNASeq/representative_genomes/representative_genomes.fna $contig >> ${outname}_seqs.fna
+
+fi
+
+
+done < $file
+done
+
+
+
+for file in *.fna;
+do
+
+seq_count=`grep ^">" $file | wc -l`
+
+if (( $seq_count == 1)); then
+echo "$file has single sequence"
+continue
+
+else
+
+outname=`basename $file _seqs.fna`
+
+muscle -in $file -out ${outname}_seqs.mcl
+
+esl-reformat stockholm ${outname}_seqs.mcl > ${outname}_seqs.stk
+
+
+fi
+
+
+done
+
+
 
