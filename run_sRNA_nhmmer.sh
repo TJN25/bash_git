@@ -125,7 +125,7 @@ fi
 
 nseqs=`esl-alistat $file | grep "Number of sequences" | cut -d ":" -f2`
 length=`esl-alistat $file | grep "Alignment length:" | cut -d ":" -f2`
-echo "Running alifoldz.pl on $file (length: $length, nseqs: $nseqs)"
+echo "Running nhmmer on $file (length: $length, nseqs: $nseqs)"
 
 
 nhmmer -E $evalue --tblout $outfolder/output/$outname.tbl -A $outfolder/alignments/tmp.stk --tformat FASTA  $file $database > $outfolder/output/$outname.res
