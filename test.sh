@@ -185,7 +185,7 @@ do
 ID=`echo $file | cut -d '.' -f1,2 | cut -d "_" -f1,2`
 ID_2=`echo $file | cut -d '.' -f1,2 `
 
-grep ^"#=GS" $file | sort | uniq | cut -d "/" -f1 | cut -d ' ' -f2 | cut -d '|' -f2 | sed -e "s/$/   $ID   $ID_2/" >> ../query_target_pairs_positive_control.txt
+grep ^"#=GS" $file | sort | uniq | cut -d "/" -f1 | cut -d ' ' -f2 | cut -d '|' -f2 | sed -e "s/$/   $ID   $ID_2/" >> query_target_pairs_positive_control.txt
 
 done
 
@@ -340,12 +340,12 @@ done < contig_descriptions.txt
 
 
 
-for file in GCA_*.fna;
+for file in *.fna;
 do
 
 runname=`basename $file .fna`
 
-if [ -f "${runname}.tmp.out" ]; then
+if [ -f "check_files/${runname}.tmp.out" ]; then
 echo "Already exists: $runname"
 continue
 else
@@ -354,9 +354,9 @@ echo "$runname"
 fi
 
 
-rfamscan $runname
+rfamscan $file
 
-> $runname.tmp.out
+> check_files/$runname.tmp.out
 
 done
 
@@ -458,3 +458,4 @@ done
 
 
 
+run_sRNA_nhmmer.sh -d ~/phd/RNASeq/representative_genomes/representative_genomes.fna -f alignments/ -o large_alignments/ -e stk -E 1e-5
