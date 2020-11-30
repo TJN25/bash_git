@@ -459,3 +459,17 @@ done
 
 
 run_sRNA_nhmmer.sh -d ~/phd/RNASeq/representative_genomes/representative_genomes.fna -f alignments/ -o large_alignments/ -e stk -E 1e-5
+
+
+git checkout $1
+check_up_to_date=`git status | grep "nothing to commit"`
+
+if [[ $check_up_to_date == 'nothing to commit, working directory clean' ]]; then
+
+git pull
+git checkout master
+git pull
+git checkout $1
+git rebase origin/master
+
+fi
