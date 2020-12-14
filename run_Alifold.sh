@@ -83,7 +83,11 @@ echo "Alignment is poor: $file"
 continue
 fi
 
-
+if (( $nseqs > 5000 )); then
+echo "Skipping $file (length: $length, nseqs: $nseqs)"
+echo "$file (length: $length, nseqs: $nseqs)" >> skipped_alignments.txt
+continue
+fi
 
 
 

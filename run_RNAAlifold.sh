@@ -64,10 +64,6 @@ fi
 
 
 
-
-echo "Running on: $file"
-
-
 nseqs=`esl-alistat $file | grep "Number of sequences" | cut -d ":" -f2`
 
 
@@ -82,6 +78,12 @@ diffLength=`expr $largest_length - $length`
 
 if (( $diffLength > $length ));then
 echo "Alignment is poor: $file"
+continue
+fi
+
+if (( $nseqs > 5000 )); then
+echo "Skipping $file (length: $length, nseqs: $nseqs)"
+echo "$file (length: $length, nseqs: $nseqs)" >> skipped_alignments.txt
 continue
 fi
 
