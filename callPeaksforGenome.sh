@@ -18,7 +18,8 @@ output_path="./"
 CPUS='6'
 output_log=/dev/stdout
 display_available_files="F"
-while getopts "g:n:o:c:qth" arg; do
+use_sra_file="T"
+while getopts "g:n:o:c:sqth" arg; do
   case $arg in
     g)
       gca=$OPTARG
@@ -35,7 +36,10 @@ while getopts "g:n:o:c:qth" arg; do
 	c)
       CPUS=$OPTARG
       #echo $file1
-      ;;                  
+      ;;  
+    s)
+      use_sra_file="F"
+      ;;                
 	q)
       output_log=$gca.log
       #echo $file1
@@ -44,14 +48,14 @@ while getopts "g:n:o:c:qth" arg; do
     display_available_files="T"
     ;; 
     h)
-echo 'PredVirusHost.sh: compares proteins from a number of contigs to hmm models and then scores'
-echo 'Version 3.0 2018'
-echo '# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -'
-echo 'usage: [options] <filename> <file type>'
-echo ' '
-echo 'Basic options:'
-echo '  -i : <filename> the protein fasta file with protein identifiers not containing spaces'
-exit      
+	echo 'PredVirusHost.sh: compares proteins from a number of contigs to hmm models and then scores'
+	echo 'Version 3.0 2018'
+	echo '# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -'
+	echo 'usage: [options] <filename> <file type>'
+	echo ' '
+	echo 'Basic options:'
+	echo '  -i : <filename> the protein fasta file with protein identifiers not containing spaces'
+	exit      
       ;;
       
     esac
@@ -59,53 +63,68 @@ done
 
 
 if [[ -z $gca ]]; then
-echo 'Error: GCA needed. Specify with -g <gca>'
-echo ' '
-echo 'Use -h for more help.'
-echo ' '
-exit
+	echo 'Error: GCA needed. Specify with -g <gca>'
+	echo ' '
+	echo 'Use -h for more help.'
+	echo ' '
+	exit
 fi
 
 
 #mkdir -p $output_path 
 
-      
-counts=`grep $gca ~/phd/RNASeq/SRA_bacteria_RNAseq.txt | grep "PAIRED" | grep "Illumina HiSeq" | wc -l`
-if (( $counts == 0 )); then
-echo "No valid RNAseq datasets for $gca"
-
-exit
-fi
-
 if [[ $display_available_files == "T" ]]; then
-grep $gca ~/phd/RNASeq/SRA_bacteria_RNAseq.txt | grep "PAIRED" | grep "Illumina HiSeq"
-exit
+	grep $gca ~/phd/RNASeq/SRA_bacteria_RNAseq.txt | grep "PAIRED" | grep "Illumina HiSeq"
+	exit
 fi
 
 
 
-cd $output_path
-mkdir -p "$gca.data"
-cd "$gca.data"
-mkdir gff_files      
-echo "Output to $output_log"
+if [[ $use_sra_file == 'T' ]]; then      
+	counts=`grep $gca ~/phd/RNASeq/SRA_bacteria_RNAseq.txt | grep "PAIRED" | grep "Illumina HiSeq" | wc -l`
+	if (( $counts == 0 )); then
+		echo "No valid RNAseq datasets for $gca"
+		exit
+	fi
 
-if (( $counts > $number_of_sra )); then
-
-grep $gca ~/phd/RNASeq/SRA_bacteria_RNAseq.txt | grep "PAIRED" | cut -f1 | head -n $number_of_sra > tmp1
-
+	cd $output_path
+	mkdir -p "$gca.data"
+	cd "$gca.data"
+	mkdir gff_files      
+	echo "Output to $output_log"
+	
+	if (( $counts > $number_of_sra )); then
+		grep $gca ~/phd/RNASeq/SRA_bacteria_RNAseq.txt | grep "PAIRED" | cut -f1 | head -n $number_of_sra > tmp1
+	else
+		grep $gca ~/phd/RNASeq/SRA_bacteria_RNAseq.txt | grep "PAIRED" | cut -f1 > tmp1
+	fi
+	
 else
 
-grep $gca ~/phd/RNASeq/SRA_bacteria_RNAseq.txt | grep "PAIRED" | cut -f1 > tmp1
+	counts=`cat experiments_list.txt | wc -l`
+	
+	if (( $counts == 0 )); then
+		echo "No valid RNAseq datasets for $gca"
+		exit
+	fi
+	
+	
+	
+	cd $output_path
+	mkdir -p "$gca.data"
+	cd "$gca.data"
+	mkdir gff_files
+	cat ../experiments_list.txt > tmp1      
+	echo "Output to $output_log"
 
 fi
 
-	if [[ -f "${gca}.fna" ]]; then
-	echo "$gca.fna already downloaded."
-	else
+if [[ -f "${gca}.fna" ]]; then
+	echo "$gca.fna already downloaded."	
+else
 	echo "Downloading $gca Genome and GFF files"
 	fetch_genomes_from_GCA.sh -r $gca -g >> $output_log
-	fi
+fi
 	
 
 

@@ -310,14 +310,14 @@ contig_end=`echo $line | cut -d ' ' -f3`
 contig_strand=`echo $line | cut -d ' ' -f4`
 
 if [[ $contig_strand == "+" ]];then
-esl-sfetch -c ${contig_start}..${contig_end} representative_genomes/representative_genomes.fna $contig >> RF00177_rep_seqs.fna
+esl-sfetch -c ${contig_start}..${contig_end} ../representative_genomes/representative_genomes.fna $contig >> RF00177_rep_seqs.fna
 else
-esl-sfetch -r -c ${contig_start}..${contig_end} representative_genomes/representative_genomes.fna $contig >> RF00177_rep_seqs.fna
+esl-sfetch -r -c ${contig_start}..${contig_end} ../representative_genomes/representative_genomes.fna $contig >> RF00177_rep_seqs.fna
 
 fi
 
 
-done < RF00177_rep_locations.txt
+done < RF00177_locations.txt
 
 
 cat ~/bin/r_git/R/r_files/test.tree > tmp1.tree
@@ -411,7 +411,7 @@ outname=`basename $file _locations.txt`
 
 echo $outname
 
-> ${outname}_seqs.fna
+> ../${outname}_seqs.fna
 while read line;
 do
 
@@ -421,9 +421,9 @@ contig_end=`echo $line | cut -d ' ' -f3`
 contig_strand=`echo $line | cut -d ' ' -f4`
 
 if [[ $contig_strand == "+" ]];then
-esl-sfetch -c ${contig_start}..${contig_end} ~/phd/RNASeq/representative_genomes/representative_genomes.fna $contig >> ${outname}_seqs.fna
+esl-sfetch -c ${contig_start}..${contig_end} ~/phd/RNASeq/representative_genomes/representative_genomes.fna $contig >> ../${outname}_seqs.fna
 else
-esl-sfetch -r -c ${contig_start}..${contig_end} ~/phd/RNASeq/representative_genomes/representative_genomes.fna $contig >> ${outname}_seqs.fna
+esl-sfetch -r -c ${contig_start}..${contig_end} ~/phd/RNASeq/representative_genomes/representative_genomes.fna $contig >> ../${outname}_seqs.fna
 
 fi
 
@@ -473,3 +473,146 @@ git checkout $1
 git rebase origin/master
 
 fi
+
+
+for file in locations/*_locations.txt;
+do
+i=0
+file_count=1
+echo $file
+shortname=`basename $file`
+outname=`basename $shortname _locations.txt`
+
+mkdir ${outname}_files
+
+
+
+esl-sfetch -c ${contig_start}..${contig_end} ~/phd/RNASeq/representative_genomes/representative_genomes.fna $contig
+while read line;  
+do    
+echo $line
+i=`expr $i + 1`;
+
+if (( $i > 50 )); then   
+i=0;   
+file_count=`expr $file_count + 1`;   
+> ${outname}_files/${outname}_rep_seqs_${file_count}.fna;   
+fi;       
+
+contig=`echo $line | cut -d ' ' -f1`;    
+contig_start=`echo $line | cut -d ' ' -f2`;    
+contig_end=`echo $line | cut -d ' ' -f3`;    
+contig_strand=`echo $line | cut -d ' ' -f4`;        
+length=`expr $contig_end - $contig_start`;      
+length=`echo $length | tr -d '-'`;      
+
+# if (( $length < 1400 )); then   
+# echo "$contig too short" ;   
+# continue;   
+# fi;      
+
+if [[ $contig_strand == "+" ]]; then           
+esl-sfetch -c ${contig_start}..${contig_end} ../representative_genomes/representative_genomes.fna $contig >> ${outname}_files/${outname}_rep_seqs_${file_count}.fna;   
+else      
+esl-sfetch -r -c ${contig_start}..${contig_end} ../representative_genomes/representative_genomes.fna $contig >> ${outname}_files/${outname}_rep_seqs_${file_count}.fna;        
+fi;      
+
+done < $file
+
+
+
+done
+
+
+
+
+
+
+for folder in *_files;
+do
+
+cmmodel=`basename $folder _files`
+
+cmfetch  ~/phd/RNASeq/Rfam.cm $cmmodel > current.cm
+
+> $folder/ali_files.txt
+for file in $folder/*.fna
+do
+
+shortname=`basename $file`
+outname=`basename $shortname .fna`
+
+cmalign -g --dnaout -o $folder/$outname.cm current.cm $file
+
+echo "$outname.cm" >> $folder/ali_files.txt
+
+done
+
+done
+
+
+
+
+
+
+
+
+
+
+
+for file in *_locations.txt;
+do
+
+
+
+ID=`basename $file _locations.txt`;  
+
+cat $file | cut  -f1 | sort | uniq  | sed -e "s/$/   $ID/" >> ../query_target_pairs_pc.txt;
+ 
+ 
+
+
+done
+
+
+for file in *_ncRNA.plot; 
+do 
+
+echo $file; 
+
+experiment=`basename $file _ncRNA.plot`
+
+run_rnaPeakCalling.R -f $experiment  -g GCA_001750725.1 
+
+
+
+done
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

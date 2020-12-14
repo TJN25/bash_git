@@ -77,12 +77,11 @@ continue
 fi
 
 
-echo "Running R-scape on $file (length: $length, nseqs: $nseqs)"
+echo "Running RNAcode on $file (length: $length, nseqs: $nseqs)"
 	
-time R-scape --r2rall --outdir ./rscape_out/ $file > rsacpe.out
+esl-reformat clustal $file | RNAcode --outfile $checkname.rnacode
 
 fi
 fi
 
 done
-
