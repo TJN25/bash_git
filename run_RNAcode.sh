@@ -40,16 +40,16 @@ fi
 
 
 
-mkdir -p "$FOLDER/rscape_out"
+mkdir -p "$FOLDER/rnacode_out"
 
 
 
 let "fileNum = 0"
-for file in alignments_rnaalifold/alignments_*; #change to _R for positive control
+for file in alignments/*.stk; #change to _R for positive control
 do
 
 checkname=`basename $file .stk`
-if [ -f "./rscape_out/${checkname}_1.R2R.sto" ]; then
+if [ -f "./rnacode_out/${checkname}.rnacode" ]; then
 echo "Already exists: $file"
 continue
 else
@@ -79,7 +79,7 @@ fi
 
 echo "Running RNAcode on $file (length: $length, nseqs: $nseqs)"
 	
-esl-reformat clustal $file | RNAcode --outfile $checkname.rnacode
+esl-reformat clustal $file | RNAcode --outfile ./rnacode_out/$checkname.rnacode
 
 fi
 fi
