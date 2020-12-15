@@ -76,6 +76,11 @@ echo "$file (length: $length, nseqs: $nseqs)" >> skipped_alignments.txt
 continue
 fi
 
+if (( $nseqs < 3 )); then
+echo "Skipping $file (length: $length, nseqs: $nseqs)"
+#echo "$file (length: $length, nseqs: $nseqs)" >> skipped_alignments.txt
+continue
+fi
 
 echo "Running RNAcode on $file (length: $length, nseqs: $nseqs)"
 	
