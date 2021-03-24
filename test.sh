@@ -603,16 +603,172 @@ done
 
 
 
+file=alignments_GCA_000006765.1_12.stk
+
+genome_name=`echo $file | cut -d '_' -f2,3`
+
+cat $file | grep -v ^"#" | grep "/" | grep -v "//" | cut -d ' ' -f1 > tmp.txt
+
+while read line; 
+do
+
+contig=`echo $line | cut -d '/' -f1`
+coord=`echo $line | cut -d '/' -f2`
+start=`echo $coord | cut -d '-' -f1`
+stop=`echo $coord | cut -d '-' -f2`
+
+
+genome=`grep $contig ~/phd/RNASeq/sequences/contig_ids_accession.lookup | cut -f2`
+
+if [[ $genome != $genome_name ]]; then
+continue
+
+fi
+
+stats=`esl-seqstat -a ~/phd/RNASeq/sequences/${genome}.fna`
+
+esl-seqstat -a ~/phd/RNASeq/sequences/${genome}.fna | grep "=" > tmp.stats
+
+
+current_count=0
+while read stat_line;
+do
+
+chromosome=`echo "$stat_line" | grep $contig | wc -l | cut -d ' ' -f8`
+
+
+if (( $chromosome > 0 ));
+then
+
+start=$(($start + $current_count))
+stop=$(($stop + $current_count))
+
+echo "$genome $start $stop"
+
+else
+length=`echo $stat_line | cut -d ' ' -f3`
+current_count=$(($current_count + $length))
+fi
+
+done < tmp.stats
+
+#chromosome=`echo "$stats" | grep $contig | grep -v "plasmid" | wc -l | cut -d ' ' -f8`
+
+done < tmp.txt
 
 
 
 
 
+wrk() { if [[ $1 == "pc" ]];then
+cd ~/phd/RNASeq/srna_seqs/version_1/positive_control/large_alignments
+elif [[ $1 == "nc" ]]; then
+cd ~/phd/RNASeq/srna_seqs/version_1/negative_control/large_alignments
+elif [[ $1 == "pred" ]]; then
+cd ~/phd/RNASeq/srna_seqs/version_1/predicted_v2
+elif [[ $1 == "pred1" ]];then
+cd ~/phd/RNASeq/srna_seqs/version_1/predicted/large_alignments
+else
+cd ~/phd/RNASeq/srna_seqs/version_1/
+fi;CURRENT=`pwd`;BASENAME=`basename "$CURRENT"`; echo -en "\033]0;$BASENAME\a";
 
 
 
 
+ }
+
+
+for file in *.stk; 
+do
+
+grep ^"#=GS" $file  | cut -d '[' -f1 | rev | cut -d ' ' -f1 | rev > move_files.txt
+
+mv $file keep/
+
+while read line; 
+do
+
+mv $line.stk ignore/
+
+done < move_files.txt
+
+done
 
 
 
+load("~/bin/r_git/R/r_files/randomForestDat.Rda")
+load("~/bin/r_git/R/r_files/randomForestDatwithNAs.Rda") ##dat
 
+pcAliScore2 <- read.table("~/phd/RNASeq/srna_seqs/version_1/positive_control/large_alignments/positive_control_alifold_score.txt")
+ncAliScore2 <- read.table("~/phd/RNASeq/srna_seqs/version_1/negative_control/large_alignments/negative_control_alifold_score.txt")
+pcAliCov2 <- read.table("~/phd/RNASeq/srna_seqs/version_1/positive_control/large_alignments/positive_control_alifold_covariation.txt")
+ncAliCov2 <- read.table("~/phd/RNASeq/srna_seqs/version_1/negative_control/large_alignments/negative_control_alifold_covariation.txt")
+pcMFE2 <- read.table("~/phd/RNASeq/srna_seqs/version_1/positive_control/large_alignments/positive_control_mfe.txt")
+ncMFE2 <- read.table("~/phd/RNASeq/srna_seqs/version_1/negative_control/large_alignments/negative_control_mfe.txt")
+
+colnames(pcAliScore2) <- c("alifold_score.2", "ID")
+colnames(ncAliScore2) <- c("alifold_score.2", "t1")
+colnames(pcAliCov2) <- c("alifold_cov_score.2", "ID")
+colnames(ncAliCov2) <- c("alifold_cov_score.2", "t1")
+colnames(pcMFE2) <- c("mfe.score.2", "ID")
+colnames(ncMFE2) <- c("mfe.score.2", "t1")
+
+pcAliScore3 <- read.table("~/phd/RNASeq/srna_seqs/version_1/positive_control/large_alignments/old/positive_control_alifold_score_2.txt")
+pcAliCov3 <- read.table("~/phd/RNASeq/srna_seqs/version_1/positive_control/large_alignments/old/positive_control_alifold_covariation_2.txt")
+pcMFE3 <- read.table("~/phd/RNASeq/srna_seqs/version_1/positive_control/large_alignments/old/positive_control_mfe_2.txt")
+
+colnames(pcAliScore3) <- c("alifold_score.3", "ID")
+colnames(pcAliCov3) <- c("alifold_cov_score.3", "ID")
+colnames(pcMFE3) <- c("mfe.score.3", "ID")
+
+ncAliScore2 <- ncAliScore2 %>% separate(col = t1, into = c("t2", "ID"), sep = "_", extra = "merge", remove = T) %>% 
+  select(-t2)
+
+ncAliCov2 <- ncAliCov2 %>% separate(col = t1, into = c("t2", "ID"), sep = "_", extra = "merge", remove = T) %>% 
+  select(-t2)
+
+ncMFE2 <- ncMFE2 %>% separate(col = t1, into = c("t2", "ID"), sep = "_", extra = "merge", remove = T) %>% 
+  select(-t2)
+
+mfe2 <- pcMFE2 %>% bind_rows(ncMFE2)
+aliScore2 <- pcAliScore2 %>% bind_rows(ncAliScore2) %>% group_by(ID) %>% summarise(alifold_score.2 = max(alifold_score.2))
+aliCov2 <- pcAliCov2 %>% bind_rows(ncAliCov2)
+
+ncAliScore3 <- ncAliScore2
+ncAliCov3 <- ncAliCov2
+ncMFE3 <- ncMFE2
+
+colnames(ncAliScore3) <- c("alifold_score.3", "ID")
+colnames(ncAliCov3) <- c("alifold_cov_score.3", "ID")
+colnames(ncMFE3) <- c("mfe.score.3", "ID")
+
+mfe3 <- pcMFE3 %>% bind_rows(ncMFE3)
+aliScore3 <- pcAliScore3 %>% bind_rows(ncAliScore3) %>% group_by(ID) %>% summarise(alifold_score.3 = max(alifold_score.3))
+aliCov3 <- pcAliCov3 %>% bind_rows(ncAliCov3)
+
+
+dat <- dat %>% 
+  left_join(mfe2, by = "ID")%>% 
+  left_join(aliScore2, by = "ID")%>% 
+  left_join(aliCov2, by = "ID") %>% 
+  left_join(mfe3, by = "ID") %>% 
+  left_join(aliScore3, by = "ID") %>% 
+  left_join(aliCov3, by = "ID") %>% 
+  unique()
+  
+  
+  
+  
+  
+for file in *.rnacode; 
+do 
+# echo $file
+line_count=`wc -l $file | cut -d ' ' -f1`
+if (( $line_count < 1 )); then
+mv $file empty_files
+fi
+done
+
+
+
+get_seqs() { tail alignments_$1.stk | grep "GC RF" | rev | cut -d ' ' -f1 | rev | sed 's/_//g'; }

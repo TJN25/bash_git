@@ -114,7 +114,12 @@ for file in $folder/*.$extension
 do
 
 echo $file
-outname=`basename $file`
+tmpname=`basename $file`
+outname=`basename $tmpname .${extension}`
+
+
+echo $tmpname
+echo $outname
 
 
 if [ -f "$outfolder/output/$outname.res" ]; then
@@ -127,6 +132,11 @@ nseqs=`esl-alistat $file | grep "Number of sequences" | cut -d ":" -f2`
 length=`esl-alistat $file | grep "Alignment length:" | cut -d ":" -f2`
 echo "Running nhmmer on $file (length: $length, nseqs: $nseqs)"
 
+if (( $length > 500 )); then
+
+continue
+
+fi
 
 nhmmer -E $evalue --tblout $outfolder/output/$outname.tbl -A $outfolder/alignments/tmp.stk --tformat FASTA  $file $database > $outfolder/output/$outname.res
 
@@ -137,11 +147,22 @@ if (( $lines > 0 )); then
 
 
 ##esl-weight!!!
-esl-alimanip   --lnfract 0.8 --lxfract 1.2 --lmin 50 --lmax 500 --detrunc 30  $outfolder/alignments/tmp.stk | esl-alimask -g --gapthresh 0.8 -p --pfract 0.5 --pthresh 0.5 --keepins - > $outfolder/alignments/$outname
+esl-alimanip   --lnfract 0.8 --lxfract 1.2 --lmin 50 --lmax 500 --detrunc 30  $outfolder/alignments/tmp.stk | esl-alimask -g --gapthresh 0.8 -p --pfract 0.5 --pthresh 0.5 --keepins - > $outfolder/alignments/$outname.stk
+
+
+grep ^"#=GS" alignments/${outname}.stk  | cut -d '[' -f1 | rev | cut -d ' ' -f1 | rev > single_seqs/move_files.txt
+
+
+while read line; 
+do
+
+mv single_seqs/$line.fna single_seqs/done
+
+done < single_seqs/move_files.txt
 
 
 
-hmmbuild $outfolder/hmm/$outname.hmm $outfolder/alignments/$outname
+#hmmbuild $outfolder/hmm/$outname.hmm $outfolder/alignments/$outname
 
 else
 

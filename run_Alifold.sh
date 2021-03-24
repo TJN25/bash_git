@@ -93,7 +93,7 @@ fi
 
 echo "Running alifoldz.pl on $file (length: $length, nseqs: $nseqs)"
 
-time esl-reformat  clustal $file  | alifoldz.pl > ./alifold/$outname.alifold         
+time  esl-alimanip   --lnfract 0.8 --lxfract 1.2 --lmin 50 --lmax 500 --detrunc 30 $file | esl-alimask --rf-is-mask - | esl-reformat clustal - | alifoldz.pl -t 0 > ./alifold/$outname.alifold         
  
 
 else

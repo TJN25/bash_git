@@ -84,7 +84,7 @@ fi
 
 echo "Running RNAcode on $file (length: $length, nseqs: $nseqs)"
 	
-esl-reformat clustal $file | RNAcode --outfile ./rnacode_out/$checkname.rnacode
+esl-reformat clustal $file | RNAcode -b --tabular --outfile ./rnacode_out/$checkname.rnacode
 
 fi
 fi
