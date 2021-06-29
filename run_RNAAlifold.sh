@@ -92,7 +92,7 @@ echo "Running RNAAlifold on $file (length: $length, nseqs: $nseqs)"
 
 > tmp.stk
 
-esl-alimanip   --lnfract 0.8 --lxfract 1.2 --lmax 500 --detrunc 30 ${file} | esl-alimask -g --gapthresh 0.8 -p --pfract 0.5 --pthresh 0.5 --keepins - > tmp.stk
+esl-alimanip   --lnfract 0.8 --lxfract 1.2 --lmax 500 --detrunc 30 ${file} | esl-alimask -g --gapthresh 0.8 -p --pfract 0.5 --pthresh 0.5 --keepins - | grep -v "SS_cons" > tmp.stk
 
 
 RNAalifold -p -r -d2 --SS_cons --noLP --color --aln-stk=${file} tmp.stk >> ./RNAAlifold/$outname.rnaalifold

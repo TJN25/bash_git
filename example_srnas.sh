@@ -17,14 +17,18 @@ Input
 }
 
 writeinfo="F"
+plotdata="T"
 
-while getopts "s:o:ih" arg; do
+while getopts "s:o:iph" arg; do
 case $arg in
     s)
         srna=${OPTARG}
         ;;
     i) 
         writeinfo='T'
+        ;;
+    p) 
+        plotdata='F'
         ;;
     o) 
         outname=${OPTARG}
@@ -64,9 +68,11 @@ get_example_srnas.R ${srna} ${outname} ${current_folder}
 
 > ${current_folder}/${outname}_example_files/${outname}_read_values.txt
 
-
+if [[ $plotdata == "T" ]]; then
 echo "Getting read depths"
 read_depths_examples.sh ${srna} ${outname} ${current_folder}
 
 echo "Plotting read depths"
 examples_heatmaps.R ${srna} ${outname} ${current_folder}
+
+fi

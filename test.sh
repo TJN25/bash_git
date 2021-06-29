@@ -772,3 +772,189 @@ done
 
 
 get_seqs() { tail alignments_$1.stk | grep "GC RF" | rev | cut -d ' ' -f1 | rev | sed 's/_//g'; }
+
+
+
+
+
+
+
+
+
+GCCGGATGATGGGAGCCGACGGTTTTGGTTACTTTGGCCACGACCAAAGTAACCCGCCGGAAGGGCGGAAAGGTGAATAGGC
+
+GGGCCGGATGATGGGAGCCGACGGTTTTGGTTACTTTGGCCACGACCAAAGTAACCCGCCGGAAGGGCGGAAAGGTGAATAGGCGGCGGGT
+
+
+GCCGGATGATGGGAGCCGACGGTTTTGGTTACTTTGGCCACGACCAAAGTAACCCGCCGGAAGGGCGGAAAGGTGAATAGGC
+
+GCCAGCAGCACCTGCCCACCGGTATCTGGTCTAAAACTGCCAATCGCGGACTCATAGCTC
+AGCTGGATAGAGTACTCGGCTACGAACCGAGCGGTCGCAGGTTCGAATCCTGCTGAGTCC
+GCCACTTTCTCGAAGTGGTTCTGCTTGCAAAGCCATTTCAGTAGCCCGGAG
+
+
+
+2087783	2087924	
+
+
+
+while read line; 
+
+do
+
+ if [[ -f ${line}.gff ]]; then
+ 
+echo "${input_name}.gff aready exists"
+	continue
+fi
+
+echo $line
+get_annotation_files.sh -g $line
+
+done < ../all_genomes_list.txt
+
+
+
+
+
+
+while read line;
+do
+
+echo $line
+
+r2r --GSC-weighted-consensus ~/phd/RNASeq/srna_seqs/version_1/predicted/large_alignments/alignments_rnaalifold/alignments_${line}.stk ~/phd/RNASeq/examples/genes/r2r_output/tmp.cons.sto 3 0.97 0.9 0.75 4 0.97 0.9 0.75 0.5 0.1
+
+cat ~/phd/RNASeq/examples/genes/r2r_output/tmp.cons.sto | sed 's!//!#=GF R2R keep allpairs!g' > ~/phd/RNASeq/examples/genes/r2r_output/${line}.cons.sto
+
+echo "//" >> ~/phd/RNASeq/examples/genes/r2r_output/${line}.cons.sto
+
+r2r --disable-usage-warning ~/phd/RNASeq/examples/genes/r2r_output/${line}.cons.sto ~/phd/RNASeq/examples/genes/r2r_output/${line}.pdf
+r2r --disable-usage-warning ~/phd/RNASeq/examples/genes/r2r_output/${line}.cons.sto ~/phd/RNASeq/examples/genes/r2r_output/${line}.svg
+
+done < ~/phd/RNASeq/predicted_ids.txt
+
+
+
+
+
+
+
+
+\def\names{{GCA_000091565.1_233},{GCA_001042875.1_140}}
+
+\begin{figure}
+	\foreach \name in \names {%
+		\begin{subfigure}[p]{0.47\textwidth}
+			\includegraphics[width=\linewidth]{~/phd/RNASeq/examples/genes/secondary_structures/main/\name}
+			\caption{}
+		\end{subfigure}\quad
+	}
+	\caption{Main figure caption}\label{fig:subfig}
+\end{figure}
+
+
+
+for file in *.pdf;
+do
+outname=`echo $file | sed 's/_/-/g' | sed 's/\./-/g' | sed 's/-pdf/\.pdf/g'` 
+echo $outname
+cp $file ../../figures/genes/${outname}
+done
+
+
+for file in *.csv;
+do
+outname=`echo $file | sed 's/_/-/g' | sed 's/\./-/g' | sed 's/-csv/\.csv/g'` 
+echo $outname
+cp $file ../${outname}
+done
+
+
+> ../list.txt
+for file in *.csv;
+do
+outname=`echo $file | sed 's/_/-/g' | sed 's/\./-/g' | sed 's/-csv//g'` 
+echo $outname >> ../list.txt
+done
+
+	
+	
+	\csvreader[tabular=rllllllc,
+	table head=\hline & Reads & Distance & Covariance & Z Score & Motif Score & Probability\\\hline\hline,
+	late after line=\\\hline]%
+	{tables/\name.csv}{1=\reads,2=\distance,3=\cov,4=\zmax,5=\motif,6=\alifold,7=\mfe,8=\gc,9=\count,10=\counttwo,11=\group,12=\id,13=\randomval,14=\probval}%
+	{ & \reads & \distance & \cov & \zmax & \motif & \probval}%
+
+
+
+
+.(((((((((((((((((((((((...............)))))))))))))))))))))))......
+...........<<<<<<<<<<<<.................>>>>>>>>>>>>................
+
+#=GC SS_cons                          ...........<<<<<..<<<<..>>>>.>>>>>....<<<<<<<<<<.....>.>>>>>>>>>.<<<<<<....>.>>>>>..............................
+
+for file in *.stk;  
+do       
+
+echo $file;    
+ID=`echo $file | cut -d '.' -f1,2 | cut -d "_" -f2,3`;    
+ID_2=`echo $file | cut -d '.' -f1,2 | cut -d "_" -f2,3,4`;     
+grep ^"#=GS" $file | sort | uniq | cut -d "/" -f1 | cut -d ' ' -f2 | rev | cut -d '|' -f1 | rev | sed -e "s/$/   $ID   $ID_2/" >> ../query_target_pairs.txt;      
+
+done
+
+
+for file in *.stk; 
+do 
+
+
+if [ -f "expanded/${file}" ]; then
+	#echo "$FOLDER/alifold/$file.alifold"
+	echo "Already exists: $file"
+	continue
+
+fi
+
+seqs=`esl-alistat $file | grep "Number of sequen" | rev | cut -d ' ' -f1 | rev`; 
+
+if (( $seqs < 3 ));then 
+
+continue 
+
+fi
+
+echo "Running nhmmer: $file"
+
+nhmmer -E 0.0001 -A expanded/$file --tformat FASTA $file ~/phd/RNASeq/all_genomes/repref204.fna > res/$file.out; 
+
+done
+
+
+
+> all_taxonomy_names.txt
+while read line;
+do
+
+echo $line
+efetch -db taxonomy -id $line -mode xml | xtract -pattern TaxaSet -element Lineage | sed -e "s/$/   $line/" >> all_taxonomy_names.txt
+
+sleep 0.333
+
+done < taxid_list.txt
+
+
+
+> ../seqs_count.txt
+for file in *.stk;
+do
+echo $file
+seqs=`esl-seqstat $file | grep "Number of sequen" | rev | cut -d ' ' -f1 | rev`;
+
+outname=`basename $file .stk | cut -d '_' -f2-`
+
+echo "$outname $seqs" >> ../seqs_count.txt
+
+done
+
+
